@@ -773,6 +773,21 @@ class BaseTelegramBotEntity:
                 event_data[ATTR_TEXT] = str(data)
                 event = EVENT_TELEGRAM_TEXT
 
+            if "reply_to_message" in data:
+                reply = data["reply_to_message"]
+                reply_data = {
+                    ATTR_MESSAGEID: reply.get(ATTR_MESSAGEID),
+                    ATTR_TEXT: reply.get("text") or reply.get(ATTR_CAPTION),
+                }
+                if "from" in reply:
+                    reply_data["from"] = {
+                        ATTR_MSGID: reply["from"].get(ATTR_MSGID),
+                        "first_name": reply["from"].get("first_name"),
+                        "last_name": reply["from"].get("last_name"),
+                        "is_bot": reply["from"].get("is_bot"),
+                    }
+                event_data["reply_to_message"] = reply_data
+
             self.hass.bus.async_fire(event, event_data)
             return True
         if ATTR_CALLBACK_QUERY in data:
